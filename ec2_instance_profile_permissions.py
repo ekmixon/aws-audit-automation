@@ -51,14 +51,14 @@ def main():
         all_data[region] = {}
         ec2_client = session.client('ec2', region_name=region)
 
-        print('Processing region: %s' % region)
+        print(f'Processing region: {region}')
 
         iterator = yield_handling_errors(get_instance_profiles, ec2_client, iam_client)
         iterator = enumerate(iterator)
 
         for i, instance_profile_policy in iterator:
             all_data[region][i] = instance_profile_policy
-            
+
             sys.stdout.write('.')
             sys.stdout.flush()
 

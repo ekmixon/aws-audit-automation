@@ -11,8 +11,7 @@ from utils.boto_error_handling import yield_handling_errors
 
 
 def get_lambda_functions_for_region(client):
-    for lambda_function in client.list_functions()['Functions']:
-        yield lambda_function
+    yield from client.list_functions()['Functions']
 
 
 def get_function(client, function_name):
@@ -57,18 +56,19 @@ def main():
 
         for lambda_function in iterator:
             function_name = lambda_function['FunctionName']
-            print('Region: %s / Lambda function: %s' % (region, function_name))
+            print(f'Region: {region} / Lambda function: {function_name}')
 
             function_details = get_function(client, function_name)
             function_policy = get_policy(client, function_name)
 
-            all_data[region][function_name] = {}
-            all_data[region][function_name]['main'] = lambda_function
-            all_data[region][function_name]['details'] = function_details
-            all_data[region][function_name]['policy'] = function_policy
-        
+            all_data[region][function_name] = {
+                'main': lambda_function,
+                'details': function_details,
+                'policy': function_policy,
+            }
+
         if not all_data[region]:
-            print('Region %s / No Lambda functions' % region)
+            print(f'Region {region} / No Lambda functions')
             continue
 
     os.makedirs('output', exist_ok=True)

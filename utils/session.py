@@ -11,13 +11,13 @@ def get_session():
         required=False,
         default='default'
     )
-    
+
     args = parser.parse_args()
 
     try:
         session = boto3.Session(profile_name=args.profile)
     except Exception as e:
-        print('%s' % e)
+        print(f'{e}')
         sys.exit(1)
 
     return session

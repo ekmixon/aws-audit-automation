@@ -20,7 +20,7 @@ def get_findings(session, region):
     detectors = detectors['DetectorIds']
 
     if not detectors:
-        print('%s has no detectors' % region)
+        print(f'{region} has no detectors')
 
     findings = []
 
@@ -28,7 +28,7 @@ def get_findings(session, region):
         # TODO: Handle findings pagination
         finding_ids = gd_client.list_findings(DetectorId=detector)
         finding_ids = finding_ids['FindingIds']
-        
+
         findings = gd_client.get_findings(
             DetectorId=detector,
             FindingIds=finding_ids
@@ -46,10 +46,11 @@ def get_findings(session, region):
 def main():
     session = get_session()
 
-    all_data = {}
+    all_data = {
+        region: get_findings(session, region)
+        for region in get_all_regions(session)
+    }
 
-    for region in get_all_regions(session):
-        all_data[region] = get_findings(session, region)
 
     os.makedirs('output', exist_ok=True)
     json_writer('output/guardduty.json', all_data)

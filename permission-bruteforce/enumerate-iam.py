@@ -22,9 +22,8 @@ config = Config(
 def report_arn(candidate):
     """ Attempt to extract and slice up an ARN from the input string. """
     logger = logging.getLogger()
-    arn_search = re.search(r'.*(arn:aws:.*:.*:.*:.*)\s*.*$', candidate)
-    if arn_search:
-        arn = arn_search.group(1)
+    if arn_search := re.search(r'.*(arn:aws:.*:.*:.*:.*)\s*.*$', candidate):
+        arn = arn_search[1]
         logger.info('-- Account ARN : %s', arn)
         logger.info('-- Account Id  : %s', arn.split(':')[4])
         logger.info('-- Account Path: %s', arn.split(':')[5])
@@ -33,7 +32,7 @@ def report_arn(candidate):
 # This is lame and won't work with federated policies and a bunch of other cases.
 def build_arn(user_arn, policy_name, path='policy'):
     """ Chops up the user ARN and attempts and builds a policy ARN. """
-    return '{}:{}/{}'.format(':'.join(user_arn.split(':')[0:5]), path, policy_name)
+    return f"{':'.join(user_arn.split(':')[:5])}:{path}/{policy_name}"
 
 
 def brute(access_key, secret_key, session_token):

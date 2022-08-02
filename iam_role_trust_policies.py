@@ -20,8 +20,7 @@ def get_role_names(client):
 
 
 def get_role_details(client, role_name):
-    role = client.get_role(RoleName=role_name)['Role']
-    return role
+    return client.get_role(RoleName=role_name)['Role']
 
 
 def main():
@@ -31,10 +30,10 @@ def main():
 
     client = session.client('iam')
 
+    roles = []
+
     for role_name in get_role_names(client):
-        print('RoleName: %s' % (role_name,))
-        
-        roles = []
+        print(f'RoleName: {role_name}')
 
         try:
             role_details = get_role_details(client, role_name)

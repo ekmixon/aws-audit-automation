@@ -4,12 +4,11 @@ UNAUTH_ERRORS = ('UnauthorizedOperation',
                  'AccessDeniedException')
 
 
-def yield_handling_errors(func, *args, **kwargs):    
+def yield_handling_errors(func, *args, **kwargs):
     try:
-        for result in func(*args, **kwargs):
-            yield result
+        yield from func(*args, **kwargs)
     except ClientError as e:
         if e.response['Error']['Code'] in UNAUTH_ERRORS:
-            print("%s" % e)
+            print(f"{e}")
         else:
-            print("Unexpected error: %s" % e)
+            print(f"Unexpected error: {e}")

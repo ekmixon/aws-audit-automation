@@ -80,10 +80,10 @@ class Resource(object):
         }
 
     def __str__(self):
-        return '<Resource %s at %s>' % (self.id, self.region)
+        return f'<Resource {self.id} at {self.region}>'
 
     def __repr__(self):
-        return '<Resource %s at %s>' % (self.id, self.region)
+        return f'<Resource {self.id} at {self.region}>'
 
 
 def get_resources(input_filename):
@@ -110,11 +110,10 @@ def get_input_csv_filename():
 
 
 def resource_matches_to_ignore_id(resource):
-    for to_ignore_id_start in RESOURCES_TO_IGNORE_PER_REGION:
-        if resource.id_start == to_ignore_id_start:
-            return True
-
-    return False
+    return any(
+        resource.id_start == to_ignore_id_start
+        for to_ignore_id_start in RESOURCES_TO_IGNORE_PER_REGION
+    )
 
 
 def should_ignore_resource(resource, ignored_resources_per_region):
@@ -146,11 +145,10 @@ def should_ignore_resource(resource, ignored_resources_per_region):
         ignored_resources_per_region[resource.region].append(resource)
         return True
 
-    if current_ignore_count[resource.id_start] < RESOURCES_TO_IGNORE_PER_REGION[resource.id_start]:
-        # print('Ignoring %s' % resource.id)
-        return True
-
-    return False
+    return (
+        current_ignore_count[resource.id_start]
+        < RESOURCES_TO_IGNORE_PER_REGION[resource.id_start]
+    )
 
 
 def main():
@@ -176,15 +174,14 @@ def main():
     #
     resources_per_region_json = {}
 
-    for region in resources_per_region:
-        for resource in resources_per_region[region]:
+    for region, value in resources_per_region.items():
+        for resource in value:
             if region in resources_per_region_json:
                 resources_per_region_json[region].append(resource.to_dict())
             else:
                 resources_per_region_json[region] = [resource.to_dict()]
 
-    used_regions = list(resources_per_region_json.keys())
-    used_regions.sort()
+    used_regions = sorted(resources_per_region_json.keys())
     used_regions.append('global')
 
     # Global is always in use

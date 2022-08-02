@@ -27,7 +27,7 @@ def get_session():
     try:
         session = boto3.Session(profile_name=args.profile)
     except Exception as e:
-        print('%s' % e)
+        print(f'{e}')
         sys.exit(1)
 
     return session, args.access_key
@@ -40,7 +40,7 @@ def find_user(session, access_key):
         key_info = iam_client.get_access_key_last_used(AccessKeyId=access_key)
         return key_info['UserName']
     except ClientError as e:
-        print("Received error: %s" % e)
+        print(f"Received error: {e}")
 
         if e.response['Error']['Code'] == 'AccessDenied':
             return "Key does not exist in target account"

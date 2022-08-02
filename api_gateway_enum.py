@@ -11,8 +11,7 @@ from utils.boto_error_handling import yield_handling_errors
 
 
 def get_api_gateways_for_region(client):
-    for rest_api in client.get_rest_apis()['items']:
-        yield rest_api
+    yield from client.get_rest_apis()['items']
 
 
 def get_authorizers(client, api_id):
@@ -31,23 +30,19 @@ def main():
 
         for rest_api in iterator:
             api_id = rest_api['id']
-            print('Region: %s / API ID: %s' % (region, api_id))
-            
+            print(f'Region: {region} / API ID: {api_id}')
+
             try:
                 authorizers = get_authorizers(client, api_id)
             except Exception as e:
                 msg = 'Failed to retrieve authorizers for %s @ %s. Error: "%s"'
                 args = (api_id, region, e)
                 print(msg % args)
-                
+
                 authorizers = {}
 
-            all_data[region][api_id] = {}
-            all_data[region][api_id]['main'] = rest_api
-            all_data[region][api_id]['authorizers'] = authorizers
-        
-        else:
-            print('Region: %s / No API gateways' % region)
+            all_data[region][api_id] = {'main': rest_api, 'authorizers': authorizers}
+        print(f'Region: {region} / No API gateways')
 
     os.makedirs('output', exist_ok=True)
     json_writer('output/api-gateways.json', all_data)

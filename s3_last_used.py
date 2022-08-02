@@ -66,13 +66,13 @@ def parse_arguments():
     try:
         session = boto3.Session(profile_name=args.profile)
     except Exception as e:
-        print('%s' % e)
+        print(f'{e}')
         sys.exit(1)
 
     csv_file = args.input
 
     if not os.path.exists(csv_file):
-        print('%s is not a file' % csv_file)
+        print(f'{csv_file} is not a file')
         sys.exit(1)
 
     return csv_file, session
@@ -87,7 +87,7 @@ class S3Data(object):
 
 
 def parse_csv(csv_file):
-    s3_last_used_data = dict()
+    s3_last_used_data = {}
 
     with open(csv_file, newline='') as csv_file:
         reader = csv.reader(csv_file)
@@ -100,20 +100,15 @@ def parse_csv(csv_file):
 
             bucket_name = request_parameters['bucketName']
 
-            if bucket_name in s3_last_used_data:
-                # Might need to update the last used time
-                if event_time > s3_last_used_data[bucket_name].event_time:
-                    s3_last_used_data[bucket_name] = S3Data(event_time,
-                                                            request_parameters,
-                                                            aws_region,
-                                                            event_source)
-            else:
-                # New lambda function
+            if (
+                bucket_name in s3_last_used_data
+                and event_time > s3_last_used_data[bucket_name].event_time
+                or bucket_name not in s3_last_used_data
+            ):
                 s3_last_used_data[bucket_name] = S3Data(event_time,
                                                         request_parameters,
                                                         aws_region,
                                                         event_source)
-
     return s3_last_used_data
 
 
@@ -134,15 +129,14 @@ def print_output(s3_last_used_data):
         if event_time is DEFAULT_DATE:
             msg = '%s NOT used during the tracking period'
             args = (bucket_name,)
-            print(msg % args)
-
         else:
             days_ago = datetime.now() - event_time.replace(tzinfo=None)
             days_ago = days_ago.days
 
             msg = '%s was last used %s days ago'
             args = (bucket_name, days_ago)
-            print(msg % args)
+
+        print(msg % args)
 
 
 def get_all_buckets(session):
@@ -154,14 +148,9 @@ def get_all_buckets(session):
 
 
 def dump_s3_buckets(session):
-    all_s3_buckets = []
-
     iterator = yield_handling_errors(get_all_buckets, session)
 
-    for bucket_name in iterator:
-        all_s3_buckets.append(bucket_name)
-
-    return all_s3_buckets
+    return list(iterator)
 
 
 def merge_all_buckets(s3_last_used_data, all_s3_buckets):

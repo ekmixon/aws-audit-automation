@@ -42,7 +42,7 @@ def dump_route53_records(route53_client, zone_name, zone_id, all_data):
             record['Name'] = record_name
 
             if zone_name not in all_data:
-                all_data[zone_name] = list()
+                all_data[zone_name] = []
 
             all_data[zone_name].append(record)
             print_interesting(record)
@@ -56,7 +56,7 @@ def main():
 
     zone_info = route53_client.list_hosted_zones()
 
-    all_data = dict()
+    all_data = {}
 
     for zone in zone_info.get('HostedZones'):
         zone_name = zone['Name']

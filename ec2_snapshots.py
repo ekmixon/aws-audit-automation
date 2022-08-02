@@ -25,7 +25,7 @@ def get_snapshots(ec2_client):
         for snapshot in snapshots:
             perms = ec2_client.describe_snapshot_attribute(Attribute='createVolumePermission',
                                                         SnapshotId=snapshot['SnapshotId'])['CreateVolumePermissions']
-            
+
             # The permissions for a snapshot are specified using the 
             # createVolumePermission attribute of the snapshot. 
             #
@@ -37,11 +37,11 @@ def get_snapshots(ec2_client):
             snapshot['CreateVolumePermissions'] = perms
 
             if perms:
-                print('Shared snapshot found: %s !' % snapshot['SnapshotId'])
+                print(f"Shared snapshot found: {snapshot['SnapshotId']} !")
                 shapshot['shared'] = True
             else:
                 shapshot['shared'] = False
-            
+
             yield snapshot
 
 
@@ -54,14 +54,14 @@ def main():
         ec2_client = session.client('ec2', region)
         all_data[region] = {}
 
-        print('Processing region: %s' % region)
+        print(f'Processing region: {region}')
 
         iterator = yield_handling_errors(get_snapshots, ec2_client)
         iterator = enumerate(iterator)
 
         for i, snapshot in iterator:
             all_data[region][i] = snapshot
-            
+
             sys.stdout.write('.')
             sys.stdout.flush()
 

@@ -31,23 +31,20 @@ def get_policy(session, policy_arn):
         VersionId=policy['Policy']['DefaultVersionId']
     )
 
-    output = dict()
-    output['document'] = policy_version['PolicyVersion']['Document']
-    output['statement'] = policy_version['PolicyVersion']['Document']['Statement']
-    return output
+    return {
+        'document': policy_version['PolicyVersion']['Document'],
+        'statement': policy_version['PolicyVersion']['Document']['Statement'],
+    }
 
 
 def main():
     session = get_session()
 
-    output = {}
-
     sts_client = session.client('sts')
     sts_data = sts_client.get_caller_identity()
     sts_data = remove_metadata(sts_data)
 
-    output['sts'] = sts_data
-
+    output = {'sts': sts_data}
     principal_type, name, session_name = get_principal_name(sts_data)
 
     output['principal_type'] = principal_type

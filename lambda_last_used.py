@@ -62,13 +62,13 @@ def parse_arguments():
     try:
         session = boto3.Session(profile_name=args.profile)
     except Exception as e:
-        print('%s' % e)
+        print(f'{e}')
         sys.exit(1)
 
     csv_file = args.input
 
     if not os.path.exists(csv_file):
-        print('%s is not a file' % csv_file)
+        print(f'{csv_file} is not a file')
         sys.exit(1)
 
     return csv_file, session
@@ -83,7 +83,7 @@ class LambdaData(object):
 
 
 def parse_csv(csv_file):
-    lambda_last_used_data = dict()
+    lambda_last_used_data = {}
 
     with open(csv_file, newline='') as csv_file:
         reader = csv.reader(csv_file)
@@ -96,20 +96,16 @@ def parse_csv(csv_file):
 
             lambda_function_arn = request_parameters['functionName']
 
-            if lambda_function_arn in lambda_last_used_data:
-                # Might need to update the last used time
-                if event_time > lambda_last_used_data[lambda_function_arn].event_time:
-                    lambda_last_used_data[lambda_function_arn] = LambdaData(event_time,
-                                                                            request_parameters,
-                                                                            aws_region,
-                                                                            event_source)
-            else:
-                # New lambda function
+            if (
+                lambda_function_arn in lambda_last_used_data
+                and event_time
+                > lambda_last_used_data[lambda_function_arn].event_time
+                or lambda_function_arn not in lambda_last_used_data
+            ):
                 lambda_last_used_data[lambda_function_arn] = LambdaData(event_time,
                                                                         request_parameters,
                                                                         aws_region,
                                                                         event_source)
-
     return lambda_last_used_data
 
 
@@ -130,15 +126,14 @@ def print_output(lambda_last_used_data):
         if event_time is DEFAULT_DATE:
             msg = '%s NOT used during the tracking period'
             args = (lambda_function_arn,)
-            print(msg % args)
-
         else:
             days_ago = datetime.now() - event_time.replace(tzinfo=None)
             days_ago = days_ago.days
 
             msg = '%s was last used %s days ago'
             args = (lambda_function_arn, days_ago)
-            print(msg % args)
+
+        print(msg % args)
 
 
 def dump_lambda_functions(session):
@@ -150,9 +145,9 @@ def dump_lambda_functions(session):
 
         iterator = yield_handling_errors(get_lambda_functions_for_region, client)
 
-        for lambda_function in iterator:
-            function_name = lambda_function['FunctionArn']
-            all_lambda_functions.append(function_name)
+        all_lambda_functions.extend(
+            lambda_function['FunctionArn'] for lambda_function in iterator
+        )
 
     return all_lambda_functions
 

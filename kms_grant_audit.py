@@ -16,8 +16,7 @@ def get_keys_for_region(client):
 
 
 def get_key_grants(client, key_id):
-    grants = client.list_grants(KeyId=key_id)['Grants']
-    return grants
+    return client.list_grants(KeyId=key_id)['Grants']
 
 
 def get_key_policies(client, key_id):
@@ -43,11 +42,11 @@ def main():
         keys_for_region = get_keys_for_region(client)
 
         if not keys_for_region:
-            print('Region: %s / No KMS keys' % region)
+            print(f'Region: {region} / No KMS keys')
             continue
 
         for key in keys_for_region:
-            print('Region: %s / KeyId: %s' % (region, key))
+            print(f'Region: {region} / KeyId: {key}')
 
             grants = []
             policies = []
@@ -66,10 +65,7 @@ def main():
                 args = (key, region, e)
                 print(msg % args)
 
-            all_data[region][key] = {}
-            all_data[region][key]['grants'] = grants
-            all_data[region][key]['policies'] = policies
-
+            all_data[region][key] = {'grants': grants, 'policies': policies}
     os.makedirs('output', exist_ok=True)
     json_writer('output/key-grants.json', all_data)
     json_printer(all_data)

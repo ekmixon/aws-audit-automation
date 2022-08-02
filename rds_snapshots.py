@@ -12,10 +12,9 @@ from utils.json_printer import json_printer
 
 def get_shapshots_for_region(client):
     paginator = client.get_paginator('describe_db_snapshots')
-    
+
     for page in paginator.paginate():
-        for shapshot in page['DBSnapshots']:
-            yield shapshot
+        yield from page['DBSnapshots']
 
 
 def get_snapshot_attributes(client, snapshot_id):
@@ -33,22 +32,19 @@ def main():
 
         for snapshot in get_shapshots_for_region(client):
             snapshot_id = snapshot['DBSnapshotIdentifier']
-            print('Region: %s / Snapshot: %s' % (region, snapshot_id))
-            
+            print(f'Region: {region} / Snapshot: {snapshot_id}')
+
             try:
                 attributes = get_snapshot_attributes(client, snapshot_id)
             except Exception as e:
                 msg = 'Failed to retrieve attributes for %s @ %s. Error: "%s"'
                 args = (snapshot_id, region, e)
                 print(msg % args)
-                
+
                 attributes = {}
 
-            all_data[region][snapshot_id] = {}
-            all_data[region][snapshot_id]['main'] = snapshot
-            all_data[region][snapshot_id]['attributes'] = attributes
-        else:
-            print('Region: %s / No snapshots found' % (region,))
+            all_data[region][snapshot_id] = {'main': snapshot, 'attributes': attributes}
+        print(f'Region: {region} / No snapshots found')
 
     os.makedirs('output', exist_ok=True)
     json_writer('output/rds-snapshots.json', all_data)

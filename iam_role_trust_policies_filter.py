@@ -22,8 +22,6 @@ for role in data:
 	if first_statement['Action'] == 'sts:AssumeRoleWithSAML':
 		continue
 
-	should_continue = True
-
 	principals = first_statement['Principal']
 	if 'Service' not in principals:
 		print(role)
@@ -34,10 +32,9 @@ for role in data:
 	if isinstance(services, str):
 		services = [services]
 
-	for service in services:
-		if not service.endswith('.amazonaws.com'):
-			should_continue = False
-			break
+	should_continue = all(
+		service.endswith('.amazonaws.com') for service in services
+	)
 
 	if should_continue:
 		continue

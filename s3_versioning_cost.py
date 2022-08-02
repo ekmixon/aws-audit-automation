@@ -32,7 +32,7 @@ def parse_arguments():
     try:
         session = boto3.Session(profile_name=args.profile)
     except Exception as e:
-        print('%s' % e)
+        print(f'{e}')
         sys.exit(1)
 
     return args.bucket, session

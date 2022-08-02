@@ -37,13 +37,11 @@ def get_lines(scanned_file, line_number):
                     line_number + 2,
                     line_number + 3,]
 
-    output = []
-
-    for i, line in enumerate(open(scanned_file)):
-        if i + 1 in line_numbers:
-            output.append(line[:-1])
-    
-    return output
+    return [
+        line[:-1]
+        for i, line in enumerate(open(scanned_file))
+        if i + 1 in line_numbers
+    ]
 
 
 def enrich(ds_output, scanned_file):

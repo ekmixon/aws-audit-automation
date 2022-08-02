@@ -59,19 +59,17 @@ def main():
             PolicySourceArn=principal,
             ActionNames=actions
         )
-        
+
         if evaluation_result['EvaluationResults'][0]['EvalDecision'] == 'allowed':
             allowed_principals.append(principal)
             sys.stdout.write('A')
-            sys.stdout.flush()
         else:
             sys.stdout.write('.')
-            sys.stdout.flush()
-
+        sys.stdout.flush()
     print('\n')
 
-    print('These principals are allowed to %s:' % actions)
-    print('\n'.join([' - %s' % ap for ap in allowed_principals]))
+    print(f'These principals are allowed to {actions}:')
+    print('\n'.join([f' - {ap}' for ap in allowed_principals]))
 
 if __name__ == '__main__':
     main()

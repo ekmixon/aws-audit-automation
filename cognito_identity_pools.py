@@ -16,9 +16,8 @@ def get_id_pools(client):
     except EndpointConnectionError:
         print('Cognito is not supported in this region')
         return
-    
-    for id_pool in id_pools:
-        yield id_pool
+
+    yield from id_pools
 
 def main():
     session = get_session()
@@ -29,18 +28,15 @@ def main():
         all_data[region] = {}
         client = session.client('cognito-identity', region_name=region)
 
-        print('Processing region: %s' % region)
+        print(f'Processing region: {region}')
 
-        for i, id_pool in enumerate(get_id_pools(client)):
+        for id_pool in get_id_pools(client):
             id_pool_id = id_pool['IdentityPoolId']
 
             id_pool = client.describe_identity_pool(IdentityPoolId=id_pool_id)
             pool_roles = client.get_identity_pool_roles(IdentityPoolId=id_pool_id)
 
-            all_data[region][id_pool_id] = {}
-            all_data[region][id_pool_id]['describe'] = id_pool
-            all_data[region][id_pool_id]['roles'] = pool_roles
-
+            all_data[region][id_pool_id] = {'describe': id_pool, 'roles': pool_roles}
             sys.stdout.write('.')
             sys.stdout.flush()
 
